@@ -1,10 +1,42 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult, FileData, Language } from "../types";
 
-// The API key must be obtained exclusively from the environment variable process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// --- DİKKAT ---
+// Vite projelerinde 'process.env' kullanmak siteyi çökertir (Blue Screen hatası).
+// Anahtarınızı güvenli bir şekilde aşağıya yapıştırın.
+
+const HARDCODED_KEY = "AIzaSyDiPo9WUtYliKwFbIKDM9Lomzt3-_ndiww"; 
 
 const MODEL_NAME = 'gemini-2.5-flash';
+
+// API Anahtarını güvenli şekilde alma fonksiyonu
+const getApiKey = () => {
+  // 1. Önce elle girilen anahtara bak
+  if (HARDCODED_KEY && !HARDCODED_KEY.includes("AIzaSyDiPo9WUtYliKwFbIKDM9Lomzt3-_ndiww")) {
+    return HARDCODED_KEY;
+  }
+  
+  // 2. Vite environment değişkenine bak (import.meta.env)
+  try {
+    // @ts-ignore
+    if (import.meta.env && import.meta.env.VITE_API_KEY) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_KEY;
+    }
+  } catch (e) {
+    // Ignore error
+  }
+
+  // 3. Hiçbiri yoksa hata ver
+  throw new Error("API Anahtarı bulunamadı! Lütfen services/geminiService.ts dosyasına anahtarınızı yapıştırın.");
+};
+
+// Client'ı sadece fonksiyon çağrıldığında oluştur (Lazy Load)
+// Bu sayede site açılırken çökmez.
+const getAIClient = () => {
+  const apiKey = getApiKey();
+  return new GoogleGenAI({ apiKey });
+};
 
 export const analyzeResume = async (file: FileData, language: Language): Promise<AnalysisResult> => {
   const langInstruction = language === 'tr' 
@@ -33,6 +65,7 @@ export const analyzeResume = async (file: FileData, language: Language): Promise
   `;
 
   try {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
       contents: {
@@ -100,6 +133,7 @@ export const generateInterviewQuestion = async (
   language: Language
 ): Promise<string> => {
   try {
+    const ai = getAIClient();
     const langInstruction = language === 'tr' 
       ? "Ask the question in Turkish." 
       : "Ask the question in English.";
@@ -130,6 +164,7 @@ export const evaluateAnswer = async (
   language: Language
 ): Promise<{ score: number; critique: string }> => {
   try {
+    const ai = getAIClient();
     const langInstruction = language === 'tr' 
       ? "Provide the critique in Turkish." 
       : "Provide the critique in English.";
