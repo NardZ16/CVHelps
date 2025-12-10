@@ -1,51 +1,12 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult, FileData, Language } from "../types";
 
-// ==============================================================================
-// ÖNEMLİ: API ANAHTARI
-// ==============================================================================
-const HARDCODED_API_KEY = "AIzaSyAcGdqzjgK7u6PUDva9yOuOrCGfcE4bVl0"; 
-
-// Helper to robustly find the API Key in various build environments
-const getApiKey = (): string => {
-  // 1. Priority: Hardcoded Key
-  // Önceki hatayı düzelttik: Artık şifre kontrolü yapmadan direkt doluysa döndürüyor.
-  if (HARDCODED_API_KEY && HARDCODED_API_KEY.length > 0) {
-    return HARDCODED_API_KEY;
-  }
-
-  // 2. Try Vite standard (import.meta.env)
-  const meta = import.meta as any;
-  if (typeof meta !== 'undefined' && meta.env && meta.env.VITE_API_KEY) {
-    return meta.env.VITE_API_KEY;
-  }
-  
-  // 3. Try Process Env (Standard Node/Webpack)
-  if (typeof process !== 'undefined' && process.env) {
-    if (process.env.VITE_API_KEY) return process.env.VITE_API_KEY;
-    if (process.env.REACT_APP_API_KEY) return process.env.REACT_APP_API_KEY;
-    if (process.env.API_KEY) return process.env.API_KEY;
-  }
-  
-  return "";
-};
-
-// Lazy initialization to prevent crashing if key is missing at startup
-const getAIClient = (language: Language) => {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error(language === 'tr' 
-      ? "API Anahtarı Bulunamadı! Lütfen services/geminiService.ts dosyasına anahtarınızı yapıştırın." 
-      : "API Key Missing! Please paste your key in services/geminiService.ts.");
-  }
-  return new GoogleGenAI({ apiKey: apiKey });
-};
+// The API key must be obtained exclusively from the environment variable process.env.API_KEY.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const MODEL_NAME = 'gemini-2.5-flash';
 
 export const analyzeResume = async (file: FileData, language: Language): Promise<AnalysisResult> => {
-  const ai = getAIClient(language);
-
   const langInstruction = language === 'tr' 
     ? "Respond strictly in Turkish language." 
     : "Respond strictly in English language.";
@@ -139,7 +100,6 @@ export const generateInterviewQuestion = async (
   language: Language
 ): Promise<string> => {
   try {
-    const ai = getAIClient(language);
     const langInstruction = language === 'tr' 
       ? "Ask the question in Turkish." 
       : "Ask the question in English.";
@@ -170,7 +130,6 @@ export const evaluateAnswer = async (
   language: Language
 ): Promise<{ score: number; critique: string }> => {
   try {
-    const ai = getAIClient(language);
     const langInstruction = language === 'tr' 
       ? "Provide the critique in Turkish." 
       : "Provide the critique in English.";
