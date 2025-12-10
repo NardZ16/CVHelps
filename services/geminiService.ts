@@ -6,12 +6,12 @@ import { AnalysisResult, FileData, Language } from "../types";
 // Kendi Google Gemini API anahtarınızı aşağıdaki tırnak içine yapıştırın.
 // Örnek: const HARDCODED_API_KEY = "AIzaSyB....";
 // ==============================================================================
-const HARDCODED_API_KEY = "BURAYA_YAPISTIR"; 
+const HARDCODED_API_KEY = "AIzaSyAcGdqzjgK7u6PUDva9yOuOrCGfcE4bVl0"; 
 
 // Helper to robustly find the API Key in various build environments
 const getApiKey = (): string => {
   // 0. Priority: Hardcoded Key (For direct builds without env vars)
-  if (HARDCODED_API_KEY && HARDCODED_API_KEY !== "BURAYA_YAPISTIR") {
+  if (HARDCODED_API_KEY && HARDCODED_API_KEY !== "AIzaSyAcGdqzjgK7u6PUDva9yOuOrCGfcE4bVl0") {
     return HARDCODED_API_KEY;
   }
 
