@@ -2,26 +2,25 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult, FileData, Language } from "../types";
 
 // ==============================================================================
-// ÖNEMLİ: NETLIFY/VERCEL SÜRÜKLE-BIRAK YÖNTEMİ İÇİN API ANAHTARI ALANI
-// Kendi Google Gemini API anahtarınızı aşağıdaki tırnak içine yapıştırın.
-// Örnek: const HARDCODED_API_KEY = "AIzaSyB....";
+// ÖNEMLİ: API ANAHTARI
 // ==============================================================================
 const HARDCODED_API_KEY = "AIzaSyAcGdqzjgK7u6PUDva9yOuOrCGfcE4bVl0"; 
 
 // Helper to robustly find the API Key in various build environments
 const getApiKey = (): string => {
-  // 0. Priority: Hardcoded Key (For direct builds without env vars)
-  if (HARDCODED_API_KEY && HARDCODED_API_KEY !== "AIzaSyAcGdqzjgK7u6PUDva9yOuOrCGfcE4bVl0") {
+  // 1. Priority: Hardcoded Key
+  // Önceki hatayı düzelttik: Artık şifre kontrolü yapmadan direkt doluysa döndürüyor.
+  if (HARDCODED_API_KEY && HARDCODED_API_KEY.length > 0) {
     return HARDCODED_API_KEY;
   }
 
-  // 1. Try Vite standard (import.meta.env)
+  // 2. Try Vite standard (import.meta.env)
   const meta = import.meta as any;
   if (typeof meta !== 'undefined' && meta.env && meta.env.VITE_API_KEY) {
     return meta.env.VITE_API_KEY;
   }
   
-  // 2. Try Process Env (Standard Node/Webpack)
+  // 3. Try Process Env (Standard Node/Webpack)
   if (typeof process !== 'undefined' && process.env) {
     if (process.env.VITE_API_KEY) return process.env.VITE_API_KEY;
     if (process.env.REACT_APP_API_KEY) return process.env.REACT_APP_API_KEY;
@@ -36,8 +35,8 @@ const getAIClient = (language: Language) => {
   const apiKey = getApiKey();
   if (!apiKey) {
     throw new Error(language === 'tr' 
-      ? "API Anahtarı Bulunamadı! Lütfen services/geminiService.ts dosyasına anahtarınızı yapıştırın veya Netlify ayarlarını kontrol edin." 
-      : "API Key Missing! Please paste your key in services/geminiService.ts or check Netlify settings.");
+      ? "API Anahtarı Bulunamadı! Lütfen services/geminiService.ts dosyasına anahtarınızı yapıştırın." 
+      : "API Key Missing! Please paste your key in services/geminiService.ts.");
   }
   return new GoogleGenAI({ apiKey: apiKey });
 };
